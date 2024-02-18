@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Web3 from 'web3';
 import contractABI from '../abi/stakingABI.json';
-import  { Container, Title, Status, Balance, Button, ListItem, StyledList, SplineContainer, ConnectedAccount } from '../styles/Styles.js';
-import Spline from '@splinetool/react-spline';
+import  { Container, Title, Status, Balance, Button, ListItem, StyledList, ConnectedAccount } from '../styles/Styles.js';
 import Nav from './Nav.js';
 import styled from 'styled-components';
 
@@ -122,7 +121,27 @@ const Staking = () => {
     }
   };
 
- 
+
+  const connectWallet = async () => {
+    if (window.ethereum) {
+      try {
+        const web3Instance = new Web3(window.ethereum);
+        const accounts = await web3Instance.eth.requestAccounts(); // Request access to account
+        if (accounts.length > 0) {
+          setAccount(accounts[0]); // Set the connected account
+          setWeb3(web3Instance); // Update the web3 instance
+          // Initialize contract here after setting the account
+          const stakingContract = new web3Instance.eth.Contract(contractABI, contractAddress);
+          setContract(stakingContract);
+        }
+      } catch (error) {
+        console.error('Error connecting to wallet:', error);
+      }
+    } else {
+      console.error('Ethereum provider not found');
+    }
+  };
+
 
   return (
     
@@ -135,9 +154,14 @@ const Staking = () => {
     {/* <SplineContainer>
         <Spline scene="https://prod.spline.design/9S5Dl86vXigDLCym/scene.splinecode" />
       </SplineContainer> */}
-      <ConnectedAccount>
+      {!account ? (
+        <Button onClick={connectWallet}>Connect Wallet</Button>
+      ) : (
+        <ConnectedAccount>
           Connected Wallet ({formatAccountAddress(account)})
         </ConnectedAccount>
+      )}
+        
       <Status success={onboardedStatus}>
         Onboarded Status: {onboardedStatus ? 'Yes' : 'No'}
       </Status>
