@@ -8,7 +8,7 @@ import styled from 'styled-components';
 
 
 const Paragraph = styled.p`
-    font-size: 30px;
+    font-size: 20px;
     color: #333;
     margin: 15px 0;
     text-align: center;
@@ -20,7 +20,7 @@ const Paragraph = styled.p`
 
 
 const Staking = () => {
-  const [ , setWeb3] = useState(null);
+  const [web3, setWeb3] = useState(null); // Updated to store web3 instance
   const [contract, setContract] = useState(null);
   const [account, setAccount] = useState(null);
   const [onboardedStatus, setOnboardedStatus] = useState(false);
@@ -29,15 +29,14 @@ const Staking = () => {
   const [userTier, setUserTier] = useState(0);  // State variable for the user's tier
   const [refreshFlag, setRefreshFlag] = useState(false); // Step 1: Refresh flag
 
-  const contractAddress = '0x9E13c0DAE16a7dDFcE8E82DD83DEFcc0686898F5';
+  const contractAddress = '0xF8f7754dACc9F8f4293C21476d920DE9Ba11F22e';
 
-  // Initialize web3 and contract
   useEffect(() => {
     const initWeb3 = async () => {
       if (window.ethereum) {
         try {
           const web3Instance = new Web3(window.ethereum);
-          setWeb3(web3Instance);
+          setWeb3(web3Instance); // Store the web3 instance
           const stakingContract = new web3Instance.eth.Contract(contractABI, contractAddress);
           setContract(stakingContract);
 
@@ -62,37 +61,38 @@ const Staking = () => {
         const status = await contract.methods.getOnboardedStatus(account).call();
         const nftBal = await contract.methods.getNFTBalance(account).call();
         const pendingRew = await contract.methods.getPendingRewards(account).call();
-        const tier = await contract.methods.determineTier(account).call();  // Fetch the user's tier
-
-        console.log('Fetched Data:', { status, nftBal, pendingRew, tier });
+        const tier = await contract.methods.determineTier(account).call();
 
         setOnboardedStatus(status);
-        setNftBalance(nftBal.toString()); // Convert BigInt to String
-        setPendingRewards(pendingRew.toString()); // Convert BigInt to String
-        setUserTier(tier.toString()); // Set the user's tier
+        setNftBalance(nftBal.toString());
+        setPendingRewards(pendingRew); // Store pending rewards directly
+        setUserTier(tier.toString());
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     }
   }, [contract, account]);
 
-   // Fetch onboarded status, NFT balance, and pending rewards when contract or account changes
-   useEffect(() => {
+  useEffect(() => {
     fetchData();
-  }, [fetchData, refreshFlag]); // Step 3: Include refreshFlag in dependency array
-  
+  }, [fetchData, refreshFlag]);
 
   const handleRefresh = () => {
-    setRefreshFlag(!refreshFlag); // Step 2: Toggle the refresh flag
+    setRefreshFlag(!refreshFlag);
   };
-  // Function to format the Ethereum account address
-  const formatAccountAddress = (address) => {
+   // Function to format the Ethereum account address
+   const formatAccountAddress = (address) => {
     if (address && address.length > 10) {
       const firstPart = address.substring(0, 6);
       const lastPart = address.substring(address.length - 4);
       return `${firstPart}...${lastPart}`;
     }
     return address;
+  };
+
+  // Function to convert wei to ether
+  const convertWeiToEther = (weiValue) => {
+    return web3 ? web3.utils.fromWei(weiValue, 'ether') : '0';
   };
 
   // Fetch onboarded status, NFT balance, and pending rewards when contract or account changes
@@ -144,7 +144,7 @@ const Staking = () => {
 
       <Balance>NFT Balance: {nftBalance}</Balance>
 
-      <Balance>Pending Rewards: {pendingRewards}</Balance>
+      <Balance>Pending Rewards: {convertWeiToEther(pendingRewards)} $Psygem</Balance>
 
       <Balance>User Tier: {userTier}</Balance>
 
@@ -156,10 +156,10 @@ const Staking = () => {
   Your user tier is currently at <strong>Tier {userTier}</strong>. Here's how it works:
   <StyledList>
     <ListItem>Tier 1: 1 NFT; Bronze Tier</ListItem>
-    <ListItem>Tier 2: 6 NFTs; Silver Tier</ListItem>
-    <ListItem>Tier 3: 11 NFTs; Gold Tier</ListItem>
-    <ListItem>Tier 4: 16 NFTs; Platinum Tier</ListItem>
-    <ListItem>Tier 5 and beyond: 21+ NFTs; Pyscho Tier</ListItem>
+    <ListItem>Tier 2: 3 NFTs; Silver Tier</ListItem>
+    <ListItem>Tier 3: 5 NFTs; Gold Tier</ListItem>
+    <ListItem>Tier 4: 7 NFTs; Platinum Tier</ListItem>
+    <ListItem>Tier 5 and beyond: 10+ NFTs; Pyscho Tier</ListItem>
   </StyledList>
   The more NFTs you hold, the higher your tier, and the larger your reward multiplier will be.
 </Paragraph>
@@ -167,13 +167,11 @@ const Staking = () => {
       <Paragraph>
         To calculate your rewards, the system uses the following formula:
         <br />
-        <strong>Rewards = Base Reward × Time Elapsed × NFT Balance × Reward Multiplier</strong>
+        <strong>Rewards = Base Reward(.0004) × Time Elapsed(seconds) × Reward Multiplier(Tier)</strong>
         <br />
         - <strong>Base Reward:</strong> A fixed reward per second.
         <br />
         - <strong>Time Elapsed:</strong> The time that has passed since your last reward claim.
-        <br />
-        - <strong>NFT Balance:</strong> The number of NFTs you hold.
         <br />
         - <strong>Reward Multiplier:</strong> Your tier-based reward multiplier.
       </Paragraph>

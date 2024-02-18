@@ -3,7 +3,7 @@ import styled from 'styled-components';
 const Container = styled.div`
   font-family: 'Akaya Telivigala', cursive;
   text-align: center;
-  max-width: 1400px;
+  max-width: 100%;
   align-self: center;
   align-items: center;
   margin: 0 auto;
@@ -25,7 +25,7 @@ top: 0;
 `;
 
 const Title = styled.h1`
-  font-size: 46px;
+  font-size: 30px;
     color: #333;
   color: linear-gradient(to bottom, purple, transparent);
   align-self: center;
@@ -36,13 +36,13 @@ const Title = styled.h1`
 `;
 
 const Status = styled.p`
-  font-size: 30px;
+  font-size: 20px;
   color: ${(props) => (props.success ? '#4CAF50' : '#F44336')};
   margin: 15px 0;
 `;
 
 const Balance = styled.p`
-  font-size: 40px;
+  font-size: 25px;
   color: #333;
   margin: 15px 0;
 `;
